@@ -169,7 +169,8 @@ app.post('/login-verify', async(req, res)=> {
     console.log(`Verification`, verification);
     
     return res.status(200).json({
-        verification
+        verification,
+        userDetails: user
     })
 })
 
