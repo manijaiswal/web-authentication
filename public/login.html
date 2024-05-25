@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+</head>
+<body>
+    <p>Login page</p>
+    <form action="" id="loginform">
+        <input type="text" id = "loginId" />
+        <button id="loginBtn">Login</button>
+    </form>
+
+    <script>
+        const { startAuthentication } = SimpleWebAuthnBrowser;
+        let userId = document.getElementById('loginId')
+        let loginBtn = document.getElementById('loginBtn');
+        console.log(`userId`, userId);
+        loginBtn.addEventListener('click', async(e)=>{
+            e.preventDefault();
+
+            let resp = await fetch(
+                '/login-options',
+                {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({userId: userId.value})
+                }
+            );
+
+            resp = await resp.json();
+            console.log('Option Response', resp);
+            let asseResp;
+            try {
+               asseResp = await startAuthentication(resp.options) 
+            } catch (error) {
+                console.log('Failed to authenticate', asseResp);
+            }
+            console.log('Assest response', asseResp);
+            let verificationResp = await fetch('/login-verify', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({userId: userId.value, creds: asseResp})
+            })
+
+            verificationResp = await verificationResp.json();
+
+            console.log('Login verification response', verificationResp);
+            
+        })
+
+    </script>
+</body>
+</html>
